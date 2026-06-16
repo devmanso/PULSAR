@@ -550,6 +550,7 @@ function update_play(dt)
   if bounced then
     State.combo = 1
     State.combo_timer = 0
+    sfx.play("WallHit.wav")
   end
 
   -- Combo timer decay 
@@ -616,6 +617,7 @@ function update_play(dt)
       local pts  = State.combo
       local push = U.orb_push + (State.combo > 2 and (State.combo - 2) * 2 or 0)
       effect.flash(0.06, gfx.COLOR_YELLOW)
+      sfx.play("OrbPickup")
       award_score(pts, push, arena)
 
       local threshold = math.floor(State.score / SHOP_EVERY) * SHOP_EVERY
@@ -624,6 +626,7 @@ function update_play(dt)
         State.shop_offers = pick_offers()
         State.shop_select_t = 0
         State.phase = "shop"
+        sfx.play("Shop")
       end
     else
       table.insert(new_orbs, o)
@@ -652,6 +655,7 @@ function update_play(dt)
     effect.screen_shake(0.25, 4)
     effect.flash(0.18, gfx.COLOR_ORANGE)
     show_pickup("Plasma Disk detonated!")
+    sfx.play("PlasmaDisk")
 
     if State.red_star then
       local rs = State.red_star
@@ -676,6 +680,7 @@ function update_play(dt)
     if rs then
       State.red_star = rs
       State.red_star_timer = 0
+      sfx.play("RedStar")
     end
   end
 
@@ -707,10 +712,12 @@ function update_play(dt)
     local rright  = arena.x + arena.w - RED_STAR_R
     local rtop    = arena.y + RED_STAR_R
     local rbottom = arena.y + arena.h - RED_STAR_R
-    if rs.x < rleft   then rs.x = rleft;   rs.vx = math.abs(rs.vx)  end
-    if rs.x > rright  then rs.x = rright;  rs.vx = -math.abs(rs.vx) end
-    if rs.y < rtop    then rs.y = rtop;    rs.vy = math.abs(rs.vy)  end
-    if rs.y > rbottom then rs.y = rbottom; rs.vy = -math.abs(rs.vy) end
+    local rs_bounced = false
+    if rs.x < rleft   then rs.x = rleft;   rs.vx = math.abs(rs.vx); rs_bounced = true  end
+    if rs.x > rright  then rs.x = rright;  rs.vx = -math.abs(rs.vx); rs_bounced = true end
+    if rs.y < rtop    then rs.y = rtop;    rs.vy = math.abs(rs.vy); rs_bounced = true  end
+    if rs.y > rbottom then rs.y = rbottom; rs.vy = -math.abs(rs.vy); rs_bounced = true end
+    if rs_bounced then sfx.play("WallHit") end
 
     local dx_nm = ball.x - rs.x
     local dy_nm = ball.y - rs.y
@@ -737,6 +744,7 @@ function update_play(dt)
         effect.flash(0.2, gfx.COLOR_RED)
         effect.screen_shake(0.3, 4)
         show_pickup("Plasma Disk shattered!")
+        sfx.play("PlasmaDisk")
         State.red_star = nil
       else
         local kill = true
@@ -756,6 +764,7 @@ function update_play(dt)
           State.dead_timer = 0
           effect.screen_shake(0.5, 6)
           effect.flash(0.35, gfx.COLOR_RED)
+          sfx.play("GameOver")
           State.red_star = nil
           return
         else
@@ -790,6 +799,7 @@ function update_play(dt)
     if wd then
       State.white_dwarf = wd
       State.white_dwarf_timer = 0
+      sfx.play("WhiteDwarf")
     end
   end
 
@@ -806,10 +816,12 @@ function update_play(dt)
     local wright  = arena.x + arena.w - WHITE_DWARF_R
     local wtop    = arena.y + WHITE_DWARF_R
     local wbottom = arena.y + arena.h - WHITE_DWARF_R
-    if wd.x < wleft   then wd.x = wleft;   wd.vx = math.abs(wd.vx)  end
-    if wd.x > wright  then wd.x = wright;  wd.vx = -math.abs(wd.vx) end
-    if wd.y < wtop    then wd.y = wtop;    wd.vy = math.abs(wd.vy)  end
-    if wd.y > wbottom then wd.y = wbottom; wd.vy = -math.abs(wd.vy) end
+    local wd_bounced = false
+    if wd.x < wleft   then wd.x = wleft;   wd.vx = math.abs(wd.vx); wd_bounced = true  end
+    if wd.x > wright  then wd.x = wright;  wd.vx = -math.abs(wd.vx); wd_bounced = true end
+    if wd.y < wtop    then wd.y = wtop;    wd.vy = math.abs(wd.vy); wd_bounced = true  end
+    if wd.y > wbottom then wd.y = wbottom; wd.vy = -math.abs(wd.vy); wd_bounced = true end
+    if wd_bounced then sfx.play("WallHit") end
 
     local dx = ball.x - wd.x
     local dy = ball.y - wd.y
@@ -825,6 +837,7 @@ function update_play(dt)
       effect.flash(0.15, gfx.COLOR_WHITE)
       effect.screen_shake(0.2, 2)
       show_pickup("White Dwarf  -  Arena Frozen!")
+      sfx.play("PowerUpPickup")
       State.white_dwarf = nil
     elseif wd.t > WHITE_DWARF_LIFE then
       State.white_dwarf = nil
@@ -840,6 +853,7 @@ function update_play(dt)
     if gw then
       State.grav_well = gw
       State.grav_well_timer = 0
+      sfx.play("GravWell")
     end
   end
 
@@ -862,6 +876,7 @@ function update_play(dt)
       effect.flash(0.18, gfx.COLOR_INDIGO)
       effect.screen_shake(0.15, 2)
       show_pickup("Gravity Well  -  Orbs Magnetized!")
+      sfx.play("PowerUpPickup")
       State.grav_well = nil
     elseif gw.t > GRAV_WELL_LIFE_BASE then
       State.grav_well = nil
@@ -884,6 +899,7 @@ function update_play(dt)
       State.plasma_disk = pd
       State.plasma_disk_timer = 0
       State.plasma_disk_fast_next = false
+      sfx.play("PlasmaDisk")
     end
   end
 
@@ -900,6 +916,7 @@ function update_play(dt)
       effect.flash(0.12, gfx.COLOR_RED)
       effect.screen_shake(0.1, 2)
       show_pickup("Plasma Disk  -  Shield Active!")
+      sfx.play("PlasmaDisk")
       State.plasma_disk = nil
     elseif pd.t > PLASMA_DISK_LIFE then
       State.plasma_disk = nil
@@ -931,6 +948,7 @@ function update_play(dt)
     State.dead_timer = 0
     effect.screen_shake(0.4, 5)
     effect.flash(0.3, gfx.COLOR_RED)
+    sfx.play("GameOver")
   end
 end
 
