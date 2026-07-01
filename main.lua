@@ -371,9 +371,10 @@ end
 
 function _init()
   State = {
-    phase    = "title",
-    hi       = 0,
-    stars_bg = make_bg_stars(),
+    phase       = "title",
+    hi          = 0,
+    stars_bg    = make_bg_stars(),
+    death_count = 0,
   }
   local saved = usagi.load()
   if saved and saved.hi then
@@ -482,6 +483,7 @@ function update_shop(dt)
 end
 
 function update_play(dt)
+  
   local ball  = State.ball
   local arena = State.arena
 
@@ -949,6 +951,14 @@ function update_play(dt)
     effect.screen_shake(0.4, 5)
     effect.flash(0.3, gfx.COLOR_RED)
     sfx.play("GameOver")
+
+    -- CMG midroll ad hook: every 3rd death, emit a print() the JS
+    -- host page watches for on the web build's console output, which
+    -- triggers cmgAdBreak() on the page side. See cmg-integration.js.
+    State.death_count = State.death_count + 1
+    if State.death_count % 3 == 0 then
+      print("PLAYING AD")
+    end
   end
 end
 
